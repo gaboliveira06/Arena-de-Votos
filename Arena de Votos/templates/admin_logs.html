@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logs — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body>
+  <header class="admin-header">
+    <div class="admin-brand">⚡ ARENA DE VOTOS <span>/ LOGS</span></div>
+    <div class="header-actions">
+      <a href="/admin/painel" class="btn-outline">📊 Painel</a>
+      <a href="/admin/logout" class="btn-outline">🚪 Sair</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <h1 class="page-title">Logs de <span>Admin</span></h1>
+
+    <div class="panel-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data</th>
+              <th>IP</th>
+              <th>Ação</th>
+              <th>Detalhe</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in logs %}
+            <tr>
+              <td>{{ l.id }}</td>
+              <td>{{ l.data }} {{ l.horario }}</td>
+              <td class="mono">{{ l.ip }}</td>
+              <td>{{ l.acao }}</td>
+              <td>{{ l.detalhe }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

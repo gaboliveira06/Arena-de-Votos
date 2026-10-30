@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arena de Votos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-bolt">⚡</span>
+        <span class="logo-label">ARENA DE VOTOS</span>
+      </div>
+      <div class="header-right">
+        <span class="round-pill" id="round-pill">DUELO 1</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="arena" id="arena">
+    <p class="arena-call">Quem deve avançar?</p>
+
+    <div class="duel-wrap" id="duel-wrap">
+      <div class="fighter-card" id="card-left">
+        <div class="fighter-glow" id="glow-left"></div>
+        <div class="fighter-number" id="num-left">#001</div>
+        <div class="fighter-avatar-ring">
+          <img
+            class="fighter-avatar"
+            id="img-left"
+            src=""
+            alt="Candidato esquerdo"
+            onerror="this.src='/static/images/placeholder.svg'"
+          />
+        </div>
+        <div class="fighter-name" id="name-left">Carregando...</div>
+        <button class="vote-btn" id="btn-left" type="button" onclick="votar('left')">
+          <span class="vote-icon">✊</span> VOTAR
+        </button>
+      </div>
+
+      <div class="vs-block">
+        <div class="vs-ring"><span class="vs-text">VS</span></div>
+        <div class="vs-divider"></div>
+      </div>
+
+      <div class="fighter-card" id="card-right">
+        <div class="fighter-glow" id="glow-right"></div>
+        <div class="fighter-number" id="num-right">#002</div>
+        <div class="fighter-avatar-ring">
+          <img
+            class="fighter-avatar"
+            id="img-right"
+            src=""
+            alt="Candidato direito"
+            onerror="this.src='/static/images/placeholder.svg'"
+          />
+        </div>
+        <div class="fighter-name" id="name-right">Carregando...</div>
+        <button class="vote-btn" id="btn-right" type="button" onclick="votar('right')">
+          <span class="vote-icon">✊</span> VOTAR
+        </button>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+      </div>
+      <p class="progress-label" id="progress-label">0 duelos realizados</p>
+    </div>
+
+    <button class="exit-btn" id="exit-btn" type="button" onclick="abrirParar()">
+      ■ &nbsp;PARAR
+    </button>
+  </main>
+
+  <div class="screen-overlay modal" id="stop-modal" style="display: none;">
+    <div class="modal-card">
+      <h2>Deseja parar agora?</h2>
+      <p>Se clicar em “Sim”, você poderá salvar a pesquisa e ver o ganhador parcial.</p>
+      <div class="modal-actions">
+        <button class="ty-restart secondary" type="button" onclick="fecharParar()">Não, continuar</button>
+        <button class="ty-restart" type="button" onclick="abrirWhatsapp()">Sim, parar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-overlay modal" id="phone-modal" style="display: none;">
+    <div class="modal-card">
+      <h2>Informe seu WhatsApp</h2>
+      <p>Digite com DDD. Exemplo: 71999998888. Se preferir, finalize sem informar.</p>
+      <input
+        id="whatsapp-input"
+        class="phone-input"
+        type="tel"
+        placeholder="DDD + número (opcional)"
+        maxlength="15"
+        autocomplete="tel"
+      />
+      <div class="modal-actions">
+        <button class="ty-restart secondary" type="button" onclick="voltarConfirmacao()">Voltar</button>
+        <button class="ty-restart secondary" type="button" onclick="finalizarSemWhatsapp()">Finalizar sem WhatsApp</button>
+        <button class="ty-restart" type="button" onclick="finalizarPesquisa()">Salvar pesquisa</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-overlay" id="ty-screen" style="display: none;">
+    <div class="ty-card">
+      <div class="ty-trophy">🏆</div>
+      <h1 class="ty-heading">Obrigado<br />por votar!</h1>
+      <p class="ty-sub" id="ty-sub">Pesquisa salva.</p>
+      <button class="ty-restart" type="button" onclick="reiniciar()">Votar Novamente</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="/static/js/script.js"></script>
+</body>
+</html>

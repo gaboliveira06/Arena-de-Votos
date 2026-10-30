@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Admin — Arena de Votos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body>
+<header class="admin-header">
+  <div class="admin-brand">⚡ ARENA DE VOTOS <span>/ PAINEL ADMIN</span></div>
+  <div class="header-actions">
+    <a href="/admin/vereadores" class="btn-outline">👥 Vereadores</a>
+    <a href="/admin/logs" class="btn-outline">🧾 Logs</a>
+    <a href="/admin/download" class="btn-outline">📥 Excel</a>
+    <a href="/admin/logout" class="btn-outline">🚪 Sair</a>
+  </div>
+</header>
+
+<main class="admin-main">
+  <div class="page-top">
+    <div>
+      <h1 class="page-title">Painel de <span>Análise</span></h1>
+      <p class="page-sub">Dashboard, ranking, pesquisas e auditoria separados para análise limpa.</p>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+      <button class="tab-btn" data-tab="ranking">🏆 Ranking</button>
+      <button class="tab-btn" data-tab="pesquisas">📋 Pesquisas</button>
+      <button class="tab-btn" data-tab="auditoria">🛡 Auditoria</button>
+    </nav>
+  </div>
+
+  <section id="dashboard" class="tab-section active">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Pesquisas válidas</div><div class="stat-value green">{{ total_validas }}</div><div class="stat-sub">entram no ranking</div></div>
+      <div class="stat-card"><div class="stat-label">Participantes únicos</div><div class="stat-value">{{ participantes_unicos }}</div><div class="stat-sub">WhatsApp, fingerprint ou IP</div></div>
+      <div class="stat-card"><div class="stat-label">Total de duelos</div><div class="stat-value">{{ total_duelos }}</div><div class="stat-sub">confrontos registrados</div></div>
+      <div class="stat-card"><div class="stat-label">Vereador líder</div><div class="stat-value leader">{{ lider.vereador if lider else '—' }}</div><div class="stat-sub">{{ lider.pesquisas_ganhas if lider else 0 }} pesquisa(s)</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel-card"><h2>📈 Pesquisas por dia</h2><p>Evolução das pesquisas válidas finalizadas.</p><div class="chart-box"><canvas id="chartEvolucao"></canvas></div></div>
+      <div class="panel-card"><h2>🏆 Top 10 vereadores</h2><p>Ranking visual por pesquisas válidas ganhas.</p><div class="chart-box"><canvas id="chartTop10"></canvas></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel-card"><h2>🧭 Status das pesquisas</h2><p>Visão discreta de válidas, suspeitas e ignoradas.</p><div class="chart-box"><canvas id="chartStatus"></canvas></div></div>
+      <div class="panel-card"><h2>📥 Relatórios</h2><p>Baixe Excel com abas de Pesquisas, Ranking, Duelos, Auditoria e Evolução.</p><a href="/admin/download" class="download-btn">↓ BAIXAR EXCEL</a></div>
+    </div>
+  </section>
+
+  <section id="ranking" class="tab-section">
+    <div class="panel-card">
+      <h2>🏆 Ranking completo + estatísticas</h2>
+      <p>Pesquisas ganhas, percentual, duelos vencidos/perdidos e taxa de vitória.</p>
+      <div class="filters compact">
+        <input id="rankingSearch" type="text" placeholder="Buscar vereador ou partido...">
+        <select id="rankingMetric"><option value="pesquisas">Ordenar por pesquisas</option><option value="duelos">Ordenar por duelos vencidos</option><option value="taxa">Ordenar por taxa de vitória</option></select>
+        <select id="rankingMin"><option value="0">Todos</option><option value="1">Com 1+ confronto</option><option value="10">Com 10+ confrontos</option></select>
+        <button class="clear-btn" type="button" id="clearRanking">Limpar</button>
+      </div>
+      <div class="table-scroll"><table id="rankingTable"><thead><tr><th>Posição</th><th>Vereador</th><th>Partido</th><th>Pesquisas</th><th>%</th><th>Venceu duelos</th><th>Perdeu duelos</th><th>Taxa</th></tr></thead><tbody>
+        {% for r in ranking_completo %}
+        <tr data-name="{{ r.vereador|lower }} {{ r.partido|lower }}" data-pesquisas="{{ r.pesquisas_ganhas }}" data-duelos="{{ r.duelos_vencidos }}" data-taxa="{{ '%.4f'|format(r.taxa_vitoria) }}" data-total="{{ r.total_confrontos }}">
+          <td class="rank-pos">{{ r.posicao }}º</td><td><strong>{{ r.vereador }}</strong></td><td class="muted">{{ r.partido }}</td><td>{{ r.pesquisas_ganhas }}</td>
+          <td>{{ '%.1f'|format(r.percentual) }}%<div class="percent-track"><div class="percent-fill" data-percent="{{ r.percentual }}"></div></div></td>
+          <td>{{ r.duelos_vencidos }}</td><td>{{ r.duelos_perdidos }}</td><td>{{ '%.1f'|format(r.taxa_vitoria) }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody></table></div>
+    </div>
+  </section>
+
+  <section id="pesquisas" class="tab-section">
+    <div class="panel-card">
+      <h2>📋 Pesquisas finalizadas</h2>
+      <p>Busque por vereador, WhatsApp, IP, fingerprint ou status. Clique em detalhes para ver o histórico.</p>
+      <div class="filter-chips">
+        <button class="filter-btn active" data-days="all">Todas</button><button class="filter-btn" data-days="0">Hoje</button><button class="filter-btn" data-days="7">7 dias</button><button class="filter-btn" data-days="30">30 dias</button>
+      </div>
+      <div class="filters">
+        <input id="pesquisaSearch" type="text" placeholder="Buscar vereador, WhatsApp, IP, fingerprint...">
+        <select id="statusFilter"><option value="">Todos os status</option><option value="VALIDO">Válido</option><option value="SUSPEITO">Suspeito</option><option value="IGNORADO_REPETICAO">Ignorado</option><option value="INCOMPLETA">Incompleta</option><option value="EM_ANDAMENTO">Em andamento</option></select>
+        <input id="dataInicio" type="date"><input id="dataFim" type="date"><button class="clear-btn" id="clearPesquisas" type="button">Limpar</button>
+      </div>
+      <div class="table-scroll"><table id="pesquisasTable"><thead><tr><th>Data</th><th>WhatsApp</th><th>IP</th><th>Ganhador</th><th>Duelos</th><th>Status</th><th>Ação</th></tr></thead><tbody>
+        {% for p in pesquisas %}
+        <tr data-search="{{ ((p.whatsapp or 'Número não informado') ~ ' ' ~ p.ip ~ ' ' ~ p.fingerprint ~ ' ' ~ p.ganhador ~ ' ' ~ p.status)|lower }}" data-status="{{ p.status }}" data-date="{{ p.data_fim }}">
+          <td>{{ p.data_fim }} {{ p.hora_fim }}</td><td class="mono">{{ p.whatsapp or 'Número não informado' }}</td><td class="mono">{{ p.ip }}</td><td><strong>{{ p.ganhador or '—' }}</strong></td><td>{{ p.total_duelos }}</td><td><span class="badge {{ p.status }}">{{ p.status }}</span></td><td><button class="detail-btn" data-id="{{ p.id }}">Ver detalhes</button></td>
+        </tr>
+        {% endfor %}
+      </tbody></table></div>
+    </div>
+
+    <div class="panel-card">
+      <h2>🕓 Pesquisas incompletas</h2>
+      <p>Usuários que começaram a votar, mas fecharam a página, saíram, atualizaram ou ainda não finalizaram. Os duelos já votados ficam contabilizados para consulta.</p>
+      <div class="table-scroll"><table id="pesquisasIncompletasTable"><thead><tr><th>Data início</th><th>WhatsApp</th><th>IP</th><th>Ganhador parcial</th><th>Duelos</th><th>Status</th><th>Ação</th></tr></thead><tbody>
+        {% for p in pesquisas_incompletas %}
+        <tr data-search="{{ ((p.whatsapp or 'Número não informado') ~ ' ' ~ p.ip ~ ' ' ~ p.fingerprint ~ ' ' ~ p.current_left ~ ' ' ~ p.ganhador ~ ' ' ~ p.status)|lower }}" data-status="{{ p.status }}" data-date="{{ p.data_inicio }}">
+          <td>{{ p.data_inicio }} {{ p.hora_inicio }}</td><td class="mono">{{ p.whatsapp or 'Número não informado' }}</td><td class="mono">{{ p.ip }}</td><td><strong>{{ p.current_left or p.ganhador or '—' }}</strong></td><td>{{ p.total_duelos }}</td><td><span class="badge {{ p.status }}">{{ p.status }}</span></td><td><button class="detail-btn" data-id="{{ p.id }}">Ver detalhes</button></td>
+        </tr>
+        {% endfor %}
+      </tbody></table></div>
+    </div>
+  </section>
+
+  <section id="auditoria" class="tab-section">
+    <div class="panel-card">
+      <h2>🛡 Auditoria técnica</h2><p class="audit-note">Aqui ficam registros técnicos para análise de fraude. Isso não deve ser apresentado como resultado eleitoral principal.</p>
+      <div class="table-scroll"><table><thead><tr><th>ID</th><th>Data</th><th>IP</th><th>WhatsApp</th><th>Fingerprint</th><th>Ganhador</th><th>Status</th><th>Motivo</th></tr></thead><tbody>
+        {% for a in auditoria %}
+        <tr><td>{{ a.id }}</td><td>{{ a.data_fim }} {{ a.hora_fim }}</td><td class="mono">{{ a.ip }}</td><td class="mono">{{ a.whatsapp or 'Número não informado' }}</td><td class="mono">{{ a.fingerprint }}</td><td>{{ a.ganhador }}</td><td><span class="badge {{ a.status }}">{{ a.status }}</span></td><td>{{ a.motivo_status }}</td></tr>
+        {% endfor %}
+      </tbody></table></div>
+    </div>
+  </section>
+</main>
+
+<div class="modal-backdrop" id="detailModal"><div class="modal"><div class="modal-head"><h3>Detalhes da Pesquisa</h3><button class="modal-close" id="closeModal">Fechar</button></div><div class="modal-body" id="modalBody">Carregando...</div></div></div>
+<script id="chart-data" type="application/json">{{ chart_payload|tojson }}</script>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vereadores — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body>
+  <header class="admin-header">
+    <div class="admin-brand"> ARENA DE VOTOS <span>/ VEREADORES</span></div>
+    <div class="header-actions">
+      <a href="/admin/painel" class="btn-outline">📊 Painel</a>
+      <a href="/admin/logout" class="btn-outline">🚪 Sair</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <h1 class="page-title">Gerenciar <span>Vereadores</span></h1>
+    <p class="page-sub">Edite nome, partido, status e envie fotos sem mexer no código.</p>
+
+    <div class="panel-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Foto</th>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Partido</th>
+              <th>Ativo</th>
+              <th>Nova imagem</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in vereadores %}
+            <tr>
+              <td>
+                <img
+                  class="thumb"
+                  src="{{ v.img }}"
+                  alt="Foto de {{ v.nome }}"
+                  onerror="this.src='/static/images/placeholder.svg'"
+                />
+              </td>
+              <td class="mono">{{ v.codigo }}</td>
+              <td>
+                <input
+                  class="table-input"
+                  form="form-vereador-{{ v.id }}"
+                  type="text"
+                  name="nome"
+                  value="{{ v.nome }}"
+                  required
+                />
+              </td>
+              <td>
+                <input
+                  class="table-input small-input"
+                  form="form-vereador-{{ v.id }}"
+                  type="text"
+                  name="partido"
+                  value="{{ v.partido }}"
+                  required
+                />
+              </td>
+              <td>
+                <input
+                  form="form-vereador-{{ v.id }}"
+                  type="checkbox"
+                  name="ativo"
+                  {% if v.ativo %}checked{% endif %}
+                />
+              </td>
+              <td>
+                <input
+                  form="form-vereador-{{ v.id }}"
+                  type="file"
+                  name="imagem"
+                  accept=".jpg,.jpeg,.png,.webp"
+                />
+              </td>
+              <td>
+                <button class="detail-btn" form="form-vereador-{{ v.id }}" type="submit">Salvar</button>
+                <form
+                  id="form-vereador-{{ v.id }}"
+                  method="POST"
+                  action="/admin/vereadores/{{ v.id }}"
+                  enctype="multipart/form-data"
+                ></form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
